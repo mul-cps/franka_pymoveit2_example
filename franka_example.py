@@ -5,6 +5,8 @@ from rclpy.node import Node
 from rclpy.action import ActionClient
 from pymoveit2 import MoveIt2
 
+from threading import Thread
+
 from franka_msgs.action import Grasp, Move
 from franka_msgs.msg import GraspEpsilon
 
@@ -50,11 +52,11 @@ class FrankaMove:
             position=position,      # position xyz
             quat_xyzw=quat_xyzw,    # quaternion xyzw
         )
-        return self._spin_action_complete(self.moveit2._MoveIt2__send_goal_future_move_action)
+        self.moveit2.wait_until_executed()
 
     def move_to_configuration(self, joint_positions):
         self.moveit2.move_to_configuration(joint_positions)
-        return self._spin_action_complete(self.moveit2._MoveIt2__send_goal_future_move_action)
+        self.moveit2.wait_until_executed()
 
     def open(self):
         if not self.cli_gripper_move.server_is_ready():
@@ -87,8 +89,11 @@ def main():
     rclpy.init()
 
     node = Node("franka_move")
-    executor = rclpy.executors.SingleThreadedExecutor()
+    executor = rclpy.executors.MultiThreadedExecutor()
     executor.add_node(node)
+
+    executor_thread = Thread(target=executor.spin, daemon=True, args=())
+    executor_thread.start()
 
     franka = FrankaMove(node)
 
