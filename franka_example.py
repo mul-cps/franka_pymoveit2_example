@@ -50,11 +50,11 @@ class FrankaMove:
             position=position,      # position xyz
             quat_xyzw=quat_xyzw,    # quaternion xyzw
         )
-        return self._spin_action_complete(self.moveit2._MoveIt2__send_goal_future_move_action)
+        return self._spin_action_complete(self.moveit2.get_goal_future())
 
     def move_to_configuration(self, joint_positions):
         self.moveit2.move_to_configuration(joint_positions)
-        return self._spin_action_complete(self.moveit2._MoveIt2__send_goal_future_move_action)
+        return self._spin_action_complete(self.moveit2.get_goal_future())
 
     def open(self):
         if not self.cli_gripper_move.server_is_ready():
